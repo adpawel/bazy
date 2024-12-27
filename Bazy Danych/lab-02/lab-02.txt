@@ -1,0 +1,107 @@
+1. SELECT * FROM public.klienci
+ORDER BY nazwa
+
+2. SELECT * FROM public.klienci
+ORDER BY miejscowosc DESC, nazwa 
+
+3. SELECT * FROM public.klienci
+WHERE miejscowosc in ('Warszawa', 'Kraków')
+ORDER BY miejscowosc DESC, nazwa 
+
+SELECT * FROM public.klienci
+WHERE miejscowosc = 'Warszawa' or miejscowosc = 'Sopot'
+ORDER BY miejscowosc DESC, nazwa
+
+4. SELECT * FROM public.klienci
+ORDER BY miejscowosc DESC
+
+5.  SELECT * FROM public.klienci
+WHERE miejscowosc = 'Kraków'
+ORDER BY nazwa
+
+6. SELECT nazwa, masa FROM public.czekoladki
+WHERE masa > 20
+
+7. SELECT nazwa, masa, koszt FROM public.czekoladki
+WHERE masa > 20 and koszt > 0.25
+
+8. SELECT nazwa, masa, koszt*100 as koszt FROM public.czekoladki
+WHERE masa > 20 and koszt > 0.25
+
+9. SELECT nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE czekolada = 'mleczna' and nadzienie = 'maliny'
+or czekolada = 'mleczna' and nadzienie = 'truskawki'
+or orzechy = 'laskowe' and czekolada != 'gorzka'
+
+10. SELECT nazwa, koszt FROM public.czekoladki
+WHERE koszt > 0.25
+
+11. SELECT nazwa, czekolada FROM public.czekoladki
+WHERE czekolada = 'mleczna' or czekolada = 'biała'
+
+12. SELECT 124 * 7 + 45
+
+13. SELECT 2^20
+
+14. SELECT sqrt(3)
+
+15.
+
+16. SELECT idczekoladki, nazwa, masa, koszt FROM public.czekoladki
+WHERE masa >= 15 and masa <= 24
+
+17. SELECT idczekoladki, nazwa, masa, koszt FROM public.czekoladki
+WHERE koszt >= 0.25 and koszt <= 0.35
+
+18. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE orzechy is not null
+
+19. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE orzechy is null
+
+20. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE orzechy is not null or nadzienie is not null
+
+21. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE orzechy is null and 
+czekolada in ('mleczna', 'biała')
+
+22. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE czekolada not in ('biała', 'mleczna') and
+(orzechy is not null or nadzienie is not null)
+
+23. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE nadzienie is not null
+
+24. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE nadzienie is null
+
+25. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE nadzienie is null and orzechy is null
+
+26. SELECT idczekoladki, nazwa, czekolada, orzechy, nadzienie FROM public.czekoladki
+WHERE nadzienie is null and
+czekolada in ('mleczna', 'biała')
+
+27. SELECT idczekoladki, nazwa, masa, koszt FROM public.czekoladki
+WHERE masa BETWEEN 15 AND 24 OR koszt BETWEEN 0.15 AND 0.24
+
+28. select idczekoladki, nazwa, masa, koszt 
+from public.czekoladki
+where (masa between 15 and 24 and koszt between 0.15 and 0.24) or
+(masa between 25 and 35 and koszt between 0.25 and 0.35)
+
+29. select idczekoladki, nazwa, masa, koszt 
+from public.czekoladki
+where masa between 15 and 24 and koszt between 0.15 and 0.24
+
+30. select idczekoladki, nazwa, masa, koszt 
+from public.czekoladki
+where (masa between 25 and 35) 
+and (koszt not between 0.25 and 0.35) 
+and (koszt not between 0.15 and 0.24)
+
+2.8.1: select idczekoladki, nazwa, opis from czekoladki;
+2.8.2: 	\o zapytanie1.html  
+	select idczekoladki, nazwa, opis from czekoladki;  
+	\o

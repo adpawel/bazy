@@ -1,0 +1,15 @@
+
+zad 1.3
+	5.
+		WHERE czekolada = 'mleczna'
+		WHERE czekolada = 'mleczna' and orzechy = 'laskowe'
+		WHERE czekolada in ('mleczna', 'gorzka')
+		WHERE masa > 25
+	6.
+		WHERE miejscowosc in ('Gdańsk', 'Kraków', 'Warszawa')
+		WHERE miejscowość != 'Gdańsk'
+		WHERE ulica LIKE 'Akacjowa%'
+
+
+
+	

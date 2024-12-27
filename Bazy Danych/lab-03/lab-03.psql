@@ -1,0 +1,211 @@
+-- 3.1
+select idzamowienia, datarealizacji from zamowienia
+where datarealizacji between '2013-11-12' and '2013-11-20';
+
+select idzamowienia, datarealizacji from zamowienia
+where datarealizacji between '2013-12-01' and '2013-12-31';
+-- datarealizacji::varchar LIKE '2013-12-__'
+
+select idzamowienia, datarealizacji from zamowienia
+where date_part('year', datarealizacji) = 2013
+    and date_part('month', datarealizacji) = 11;
+
+select idzamowienia, datarealizacji from zamowienia
+where date_part('year', datarealizacji) = 2013 
+    and date_part('month', datarealizacji) in (11,12);
+
+select idzamowienia, datarealizacji from zamowienia
+where date_part('day', datarealizacji) in (17, 18, 19);
+
+select idzamowienia, datarealizacji from zamowienia
+where date_part('week', datarealizacji) in (46, 47);
+
+
+-- 3.2
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa similar to 'S%';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa similar to 'S%i';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa ~ '^S' and nazwa ~ ' m';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa ~ '^(A|B|C)';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa ~ '^Orzech' or nazwa similar to '%orzech%';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa similar to 'S%m%';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie 
+from czekoladki
+where nazwa similar to '%maliny%' or nazwa similar to '%truskawki%';
+-- where nazwa ~* '(^| )maliny|truskawki'
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie
+from czekoladki
+where nazwa !~ '^[D-KST]'
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie
+from czekoladki
+where nazwa ~ '^Słod';
+
+select idCzekoladki, nazwa, czekolada, orzechy, nadzienie
+from czekoladki
+where nazwa ~ '^\w+$';
+
+
+-- 3.3
+select distinct miejscowosc 
+from klienci
+where miejscowosc like '% %';
+
+select nazwa, telefon from klienci
+where telefon similar to '___ ___ __ __';
+-- telefon ~ '^[0-9]{3} [0-9]{3} [0-9]{2} [0-9]{2}$'
+
+select nazwa, telefon from klienci
+where telefon ~ '^[0-9]{3} [0-9]{3} [0-9]{3}$';
+
+
+-- 3.4
+(SELECT idczekoladki, nazwa, masa, koszt
+FROM czekoladki
+WHERE masa BETWEEN 15 AND 24)
+UNION
+(SELECT idczekoladki, nazwa, masa, koszt
+FROM czekoladki
+WHERE koszt BETWEEN 0.15 AND 0.24)
+
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where masa between 25 and 35)
+except
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where koszt between 0.25 and 0.35)
+-- intersect
+-- (select idczekoladki, nazwa, masa, koszt
+-- from czekoladki
+-- where koszt not between 0.25 and 0.35)
+
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where masa between 15 and 24 
+    and koszt between 0.15 and 0.24)
+union
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where masa between 25 and 35 
+    and koszt between 0.25 and 0.35)
+
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where masa between 25 and 35)
+intersect
+(select idczekoladki, nazwa, masa, koszt
+from czekoladki
+where koszt not between 0.15 and 0.24
+    and koszt not between 0.29 and 0.35)
+
+
+-- 3.5
+(select idklienta from klienci)
+except
+(select distinct idklienta from zamowienia);
+
+select idpudelka from pudelka
+EXCEPT
+select idpudelka from artykuly;
+
+SELECT * FROM
+(
+    SELECT nazwa FROM klienci
+    UNION
+    SELECT nazwa FROM czekoladki
+    UNION
+    SELECT nazwa FROM pudelka
+)
+WHERE nazwa ILIKE '%rz%';   -- ilike nie rozróznia wielkości znaków
+
+select idczekoladki from czekoladki
+except
+select idczekoladki from zawartosc;
+
+
+-- 3.6
+select idmeczu, 
+    coalesce(gospodarze[1], 0) + coalesce(gospodarze[2], 0) +
+    coalesce(gospodarze[3], 0) + coalesce(gospodarze[4], 0) +
+    coalesce(gospodarze[5], 0) as gospodarze,
+    coalesce(goscie[1], 0) + coalesce(goscie[2], 0) +
+    coalesce(goscie[3], 0) + coalesce(goscie[4], 0) +
+    coalesce(goscie[5], 0) as goscie
+ from siatkowka.statystyki
+-- SELECT
+--     idmeczu,
+--     (SELECT SUM(s) FROM UNNEST(gospodarze) s) as gospodarze,
+--     (SELECT SUM(s) FROM UNNEST(goscie) s) as goscie
+-- FROM siatkowka.statystyki
+
+select
+    idmeczu,
+    (select SUM(s) from UNNEST(gospodarze) s) as gospodarze,
+    (select SUM(s) from UNNEST(goscie) s) as goscie
+from siatkowka.statystyki
+where coalesce(goscie[5], 0) > 15 
+    or coalesce(gospodarze[5], 0) > 15
+
+select idmeczu,
+
+ from siatkowka.statystyki
+
+select idmeczu,
+concat(
+case when (gospodarze[1] > goscie[1]) then 1 else 0 end +
+case when (gospodarze[2] > goscie[2]) then 1 else 0 end +
+case when (gospodarze[3] > goscie[3]) then 1 else 0 end +
+case when (gospodarze[4] > goscie[4]) then 1 else 0 end +
+case when (gospodarze[5] > goscie[5]) then 1 else 0 end
+, ':',
+case when (gospodarze[1] < goscie[1]) then 1 else 0 end +
+case when (gospodarze[2] < goscie[2]) then 1 else 0 end +
+case when (gospodarze[3] < goscie[3]) then 1 else 0 end +
+case when (gospodarze[4] < goscie[4]) then 1 else 0 end +
+case when (gospodarze[5] < goscie[5]) then 1 else 0 end)
+as "wynik"
+from siatkowka.statystyki;
+
+select
+    idmeczu,
+    (select SUM(s) from UNNEST(gospodarze) s) as gospodarze,
+    (select SUM(s) from UNNEST(goscie) s) as goscie
+from siatkowka.statystyki
+where coalesce(gospodarze[1], 0) + coalesce(gospodarze[2], 0) +
+    coalesce(gospodarze[3], 0) + coalesce(gospodarze[4], 0) +
+    coalesce(gospodarze[5], 0) > 100;
+-- (SELECT SUM(s) FROM UNNEST(gospodarze) s) > 100
+
+select idmeczu, gospodarze[1] as "1. set",
+    (select SUM(s) from UNNEST(gospodarze) s) as gospodarze
+from siatkowka.statystyki
+where 
+    sqrt(gospodarze[1]) < log(2, (select SUM(s) from UNNEST(gospodarze) s));
+
+
+\o .html
+select idmeczu, gospodarze[1] as "1. set",
+    (select SUM(s) from UNNEST(gospodarze) s) as gospodarze
+from siatkowka.statystyki
+where 
+    sqrt(gospodarze[1]) < log(2, (select SUM(s) from UNNEST(gospodarze) s));
+\o
