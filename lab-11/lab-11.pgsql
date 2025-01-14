@@ -16,6 +16,21 @@ language plpgsql;
 
 select masaPudelka('alls');
 
+-- zad 11.1.2
+create or replace function liczbaCzekoladek(in arg1 character(4))
+returns integer as
+$$
+DECLARE wynik integer;
+BEGIN
+    select sum(sztuk) into wynik
+    from zawartosc 
+    where idpudelka = arg1;
+    
+    return wynik;
+END;
+$$ language plpgsql;
+
+select liczbaCzekoladek('alls');
 
 
 -- zad 11.2.1
@@ -86,23 +101,140 @@ select rabat(1);
 
 
 
--- zad 11.4.1
+-- zad 11.4
 create or replace function podwyzka()
-as 
+returns void as 
 $$
+declare 
+    zmiana numeric(7,2);
+    c record;
+    z record;
 begin 
-    for c in select * from czekoladki
-    loop 
-        IF c.koszt < 0.20
-            then c.koszt := c.koszt + 0.03
-        elsif c.koszt between 0.20 and 0.29
-            then c.koszt := c.koszt + 0.04
-        else c.koszt := c.koszt + 0.05
+    for c in select * from czekoladki loop 
+        IF c.koszt < 0.20 then 
+            zmiana := 0.03;
+        elsif c.koszt between 0.20 and 0.29 then 
+            zmiana := 0.04;
+        else zmiana := 0.05;
         end if;
-        for z in select * from zawartosc zaw join pudelka p using(idpudelka) 
-        loop 
-            where z.idczekoladki = c.idczekoladki
+ 
+        UPDATE czekoladki 
+        set koszt = koszt + zmiana 
+        where idczekoladki = c.idczekoladki;
+        
+        for z in select * from zawartosc where idczekoladki = c.idczekoladki loop 
+            update pudelka
+            set cena = cena + zmiana * z.sztuk
+            where idpudelka = z.idpudelka;
         end loop;
     end loop;
 end;
 $$ language plpgsql;
+
+select podwyzka();
+
+-- zad 11.5
+create or replace function obnizka()
+returns void as 
+$$
+declare 
+    zmiana numeric(7,2);
+    c record;
+    z record;
+begin 
+    for c in select * from czekoladki loop 
+        IF c.koszt < 0.24 then 
+            zmiana := 0.03;
+        elsif c.koszt between 0.24 and 0.33 then 
+            zmiana := 0.04;
+        else zmiana := 0.05;
+        end if;
+ 
+        UPDATE czekoladki 
+        set koszt = koszt - zmiana 
+        where idczekoladki = c.idczekoladki;
+        
+        for z in select * from zawartosc where idczekoladki = c.idczekoladki loop 
+            update pudelka
+            set cena = cena - zmiana * z.sztuk
+            where idpudelka = z.idpudelka;
+        end loop;
+    end loop;
+end;
+$$ language plpgsql;
+select obnizka();
+select * from pudelka;
+
+-- zad 11.6.1
+create or replace function zamowieniaKlienta(in arg1 integer)
+returns table(
+    r_idzamowienia integer,
+    r_idpudelka character(4),
+    r_datarealizacji date
+) as
+$$
+BEGIN
+    return query select z.idzamowienia, a.idpudelka, z.datarealizacji
+    from zamowienia z 
+        join artykuly a using(idzamowienia)
+    where z.idklienta = arg1;
+
+END;
+$$ language plpgsql;
+
+select * from zamowieniaKlienta(1);
+
+-- zad 11.6.2
+create or replace function getClientsByCity(in city varchar)
+returns table(
+    r_nazwa varchar,
+    r_adres varchar
+) as
+$$
+BEGIN
+    return query select nazwa::varchar, (ulica || ', ' || miejscowosc)::varchar from klienci 
+    where miejscowosc = city;
+END;
+$$ language plpgsql;
+
+select * from getClientsByCity('Katowice');
+
+-- zad 11.7
+set search_path to kwiaciarnia;
+
+create or replace function rabatKwiaciarnia(in arg1 varchar)
+returns integer as 
+$$
+DECLARE
+    sumarycznaCena numeric(10,2);
+    sumarycznaCena1 numeric(10,2);
+    sumarycznaCena2 numeric(10,2);
+    rabat integer;
+BEGIN
+    select COALESCE(sum(cena), 0) into sumarycznaCena1
+    from historia
+    where idklienta = arg1 and termin > now() - interval '7 days';
+
+    select COALESCE(sum(cena), 0) into sumarycznaCena2
+    from zamowienia
+    where idklienta = arg1;
+
+    sumarycznaCena := sumarycznaCena1 + sumarycznaCena2;
+
+    if sumarycznaCena > 0 and sumarycznaCena < 100 then 
+        rabat := 5;
+    elsif sumarycznaCena between 101 and 400 THEN
+        rabat := 10;
+    elsif sumarycznaCena between 401 and 700 THEN
+        rabat := 15;     
+    elsif sumarycznaCena > 700 then 
+        rabat := 20;
+    else rabat := 0;
+    end if;
+
+    return rabat;
+END;
+$$ language plpgsql; 
+
+select rabatKwiaciarnia('karolina');
+
